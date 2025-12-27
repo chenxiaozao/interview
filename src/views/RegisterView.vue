@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { showToast } from 'vant'
+import { useRouter } from 'vue-router'
+
+// 获取 vue 路由器实例，需要写到 setup 顶级，不能嵌套到其他函数中
+const router = useRouter()
 
 // 表单数据
 const username = ref('')
@@ -20,7 +23,8 @@ const passwordRules = [
 // 表单提交
 const onSubmit = () => {
   console.log('注册信息:', username.value, password.value)
-  showToast('注册功能待实现')
+  alert('页面即将跳转到主页')
+  router.push('/')
 }
 </script>
 
