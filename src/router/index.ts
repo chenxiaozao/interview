@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { getStorageToken } from '@/utils/storage'
 import ArticleView from '@/views/ArticleView.vue'
 import LayoutView from '@/views/LayoutView.vue'
@@ -11,7 +11,7 @@ import UserView from '@/views/tabbar/UserView.vue'
 
 const whiteList = ['/login', '/register']
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/login',
