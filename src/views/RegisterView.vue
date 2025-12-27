@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import { registerAPI } from '@/apis/user'
-import { showFailToast, showLoadingToast, showSuccessToast } from 'vant'
+import { showLoadingToast, showSuccessToast } from 'vant'
+import { setStorageToken } from '@/utils/storage'
 import { ref } from 'vue'
 
 const username = ref('')
 const password = ref('')
-
-// 表单校验规则
-const usernameRules = [
-  { required: true, message: '请填写用户名' },
-  { pattern: /^\w{5,}$/, message: '用户名至少包含5个字符' },
-]
-
-const passwordRules = [
-  { required: true, message: '请填密码' },
-  { pattern: /^\w{6,}$/, message: '密码至少包含6个字符' },
-]
 
 const onSubmit = async () => {
   // ⏳加载轻提示
@@ -23,17 +13,15 @@ const onSubmit = async () => {
     message: '注册中...',
     forbidClick: true, // 禁用点击
   })
-  try {
-    const res = await registerAPI({
-      username: username.value,
-      password: password.value,
-    })
-    // ✅成功轻提示
-    showSuccessToast('注册成功' + res)
-  } catch (error) {
-    // ❌失败轻提示
-    showFailToast('注册失败' + error)
-  }
+
+  const res = await registerAPI({
+    username: username.value,
+    password: password.value,
+  })
+  setStorageToken(res.data.token)
+
+  // ✅成功轻提示
+  showSuccessToast('注册成功')
 }
 </script>
 
@@ -51,7 +39,10 @@ const onSubmit = async () => {
         label="用户名"
         placeholder="请输入用户名"
         autocomplete="username"
-        :rules="usernameRules"
+        :rules="[
+          { required: true, message: '请填写用户名' },
+          { pattern: /^\w{5,}$/, message: '用户名至少包含5个字符' },
+        ]"
         name="username"
       />
       <van-field
@@ -60,7 +51,10 @@ const onSubmit = async () => {
         label="密码"
         placeholder="请输入密码"
         autocomplete="new-password"
-        :rules="passwordRules"
+        :rules="[
+          { required: true, message: '请填密码' },
+          { pattern: /^\w{6,}$/, message: '密码至少包含6个字符' },
+        ]"
         name="password"
       />
       <div class="form-button">

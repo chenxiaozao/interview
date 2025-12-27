@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import request from '@/utils/request'
+import { loginAPI } from '@/apis/user'
+import { setStorageToken } from '@/utils/storage'
+import { showLoadingToast, showSuccessToast } from 'vant'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -11,30 +13,25 @@ const password = ref('123456')
 const router = useRouter()
 
 // 表单校验规则
-const usernameRules = [
-  { required: true, message: '请输入用户名' },
-  { pattern: /\w{5,}/, message: '用户名至少包含5个字符' },
-]
-
-const passwordRules = [
-  { required: true, message: '请输入密码' },
-  { pattern: /\w{6,}/, message: '密码至少包含6个字符' },
-]
 
 // 表单提交
 const onSubmit = async () => {
-  try {
-    // 发送登录请求给后端服务器
-    await request.post('/h5/user/login', {
-      username: username.value, // 用户名
-      password: password.value, // 密码
-    })
-    alert('登录成功')
-    // 登录成功，跳转到首页
-    router.push('/home')
-  } catch (error) {
-    alert('登录失败' + error)
-  }
+  showLoadingToast({
+    message: '登录中...', // 提示文案
+    forbidClick: true, // 是否禁止背景点击，防止用户重复登录
+  })
+  // 调用登录接口
+  const res = await loginAPI({
+    username: username.value,
+    password: password.value,
+  })
+  // // 登录成功，将 token 持久化存储到本地存储
+  // localStorage.setItem('interview-token', res.data.token)
+  setStorageToken(res.data.token)
+  // 成功轻提示
+  showSuccessToast('登录成功')
+  // 登录成功后，跳转到首页
+  router.push('/home')
 }
 </script>
 
@@ -50,7 +47,10 @@ const onSubmit = async () => {
         placeholder="请输入用户名"
         v-model="username"
         name="username"
-        :rules="usernameRules"
+        :rules="[
+          { required: true, message: '请填写用户名' },
+          { pattern: /^\w{5,}$/, message: '用户名至少包含5个字符' },
+        ]"
         autocomplete="username"
       />
       <!-- 密码框 -->
@@ -60,7 +60,10 @@ const onSubmit = async () => {
         v-model="password"
         type="password"
         name="password"
-        :rules="passwordRules"
+        :rules="[
+          { required: true, message: '请填密码' },
+          { pattern: /^\w{6,}$/, message: '密码至少包含6个字符' },
+        ]"
         autocomplete="current-password"
       />
       <div class="form-button">
@@ -90,3 +93,4 @@ const onSubmit = async () => {
   }
 }
 </style>
+
