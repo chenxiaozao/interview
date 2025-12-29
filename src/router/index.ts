@@ -79,6 +79,13 @@ const router = createRouter({
       ],
     },
   ],
+  // 路由切换时滚动到顶部
+  scrollBehavior() {
+    return {
+      left: 0,
+      top: 0,
+    }
+  },
 })
 // 前置导航守卫
 router.beforeEach((to) => {

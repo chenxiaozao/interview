@@ -60,7 +60,7 @@ const toggleCollect = async () => {
   <div class="detail-page">
     <van-nav-bar left-text="返回" left-arrow @click-left="$router.back()" fixed title="面经详情" />
     <header class="header">
-      <h1>{{ article?.stem }}</h1>
+      <h1 class="article-title">{{ article?.stem }}</h1>
       <p>
         {{ article?.createdAt }} | {{ article?.views }} 浏览量 | {{ article?.likeCount }} 点赞数
       </p>
@@ -86,14 +86,33 @@ const toggleCollect = async () => {
 <style lang="scss" scoped>
 .detail-page {
   margin-top: 44px;
-  overflow: hidden;
   padding: 0 15px;
+  background-color: var(--theme-background);
+  min-height: 100vh;
+  color: var(--theme-text-primary);
+
+  // 确保v-html内容也有正确的背景色
+  .body {
+    background-color: var(--theme-background);
+
+    // 确保v-html中的所有元素都继承正确的文本颜色
+    * {
+      color: var(--theme-text-primary) !important;
+    }
+  }
   .header {
-    h1 {
+    .article-title {
       font-size: 24px;
+      display: block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--theme-text-primary);
+      font-weight: bold;
     }
     p {
-      color: #999;
+      color: var(--theme-text-secondary);
       font-size: 12px;
       display: flex;
       align-items: center;
@@ -105,20 +124,52 @@ const toggleCollect = async () => {
       overflow: hidden;
     }
   }
+  .body {
+    font-size: 16px;
+    line-height: 1.8;
+    margin-top: 15px;
+    margin-bottom: 100px;
+    color: var(--theme-text-primary);
+
+    /* 确保v-html内容中的文本也有合适的对比度 */
+    * {
+      color: inherit;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: var(--theme-text-primary);
+      margin: 16px 0;
+    }
+
+    p {
+      margin: 12px 0;
+    }
+
+    a {
+      color: var(--theme-primary);
+    }
+  }
+
   .opt {
     position: fixed;
     bottom: 100px;
     right: 0;
     > .van-icon {
       margin-right: 20px;
-      background: #fff;
+      background: var(--theme-card);
       width: 40px;
       height: 40px;
       line-height: 40px;
       text-align: center;
       border-radius: 50%;
-      box-shadow: 2px 2px 10px #ccc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       font-size: 18px;
+      color: var(--theme-text-primary);
       &.active {
         background: #fec635;
         color: #fff;

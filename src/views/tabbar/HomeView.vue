@@ -6,9 +6,16 @@ import { showToast } from 'vant'
 
 const list = ref<ArticleRowItem[]>([])
 const current = ref(1)
-const sorter = ref<'weight_desc' | undefined>('weight_desc')
+// 从localStorage获取保存的排序状态
+const savedSorter = localStorage.getItem('home_sorter')
+const sorter = ref<'weight_desc' | undefined>(
+  savedSorter === 'undefined'
+    ? undefined
+    : (savedSorter as 'weight_desc' | undefined) || 'weight_desc',
+)
 const isloading = ref(false)
 const isfinished = ref(false)
+const isFirstLoading = ref(true)
 
 // 请求ID，用于确保只有最新的请求结果才会更新UI
 let currentRequestId = 0
@@ -44,6 +51,8 @@ const changSorter = async (value: typeof sorter.value) => {
   if (sorter.value === value) return
 
   sorter.value = value
+  // 保存排序状态到localStorage
+  localStorage.setItem('home_sorter', value === undefined ? 'undefined' : value)
   current.value = 1
   isfinished.value = false
   list.value = []
@@ -93,8 +102,12 @@ const getArticles = async () => {
     const rows = res.data.rows ?? []
     const pageTotal = res.data.pageTotal ?? 0
 
-    if (reqPage === 1) list.value = rows
-    else list.value.push(...rows)
+    if (reqPage === 1) {
+      list.value = rows
+      isFirstLoading.value = false
+    } else {
+      list.value.push(...rows)
+    }
 
     // ✅ finished / 下一页用 reqPage 计算，别用 await 后的 current.value
     if (reqPage >= pageTotal) {
@@ -111,44 +124,60 @@ const getArticles = async () => {
     }
   }
 }
+
+// 页面初始化时主动加载数据
+getArticles()
 </script>
 
 <template>
-  <div class="home-view">
-    <nav class="my-nav van-hairline--bottom">
-      <a
-        href="#"
-        @click.prevent="changSorter('weight_desc')"
-        :class="{ active: sorter === 'weight_desc' }"
-      >
+  <div class="home-view page">
+    <nav class="my-nav van-hairline--bottom card">
+      <span @click="changSorter('weight_desc')" :class="{ active: sorter === 'weight_desc' }">
         推荐
-      </a>
-      <a href="#" @click.prevent="changSorter(undefined)" :class="{ active: sorter === undefined }">
-        最新
-      </a>
+      </span>
+      <span @click="changSorter(undefined)" :class="{ active: sorter === undefined }"> 最新 </span>
 
       <div class="logo">
         <h1 class="logo-text">面经</h1>
       </div>
     </nav>
 
+    <div v-if="isFirstLoading" class="skeleton-container">
+      <div v-for="i in 3" :key="i" class="skeleton-item section">
+        <div class="head">
+          <div class="avatar skeleton"></div>
+          <div class="con">
+            <div class="title skeleton"></div>
+            <div class="other skeleton"></div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="line skeleton"></div>
+          <div class="line skeleton"></div>
+        </div>
+        <div class="foot">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      </div>
+    </div>
+
     <van-list
+      v-else
       class="article-list"
       v-model:loading="isloading"
       :finished="isfinished"
       @load="getArticles"
       finished-text="没有更多了"
     >
-      <!-- 最新tab提示文案 -->
-      <div v-if="sorter === undefined" class="latest-tip">按发布时间排序（基于已加载数据）</div>
-      <ArticleItem v-for="item in displayList" :key="item.id" :article="item" />
+      <ArticleItem v-for="item in displayList" :key="item.id" :article="item" class="section" />
     </van-list>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .home-view {
-  margin-bottom: 50px;
+  margin-bottom: calc(50px + 16px);
   margin-top: 44px;
   .my-nav {
     height: 44px;
@@ -157,94 +186,161 @@ const getArticles = async () => {
     top: 0;
     width: 100%;
     z-index: 999;
-    background: #fff;
+    background: var(--theme-card);
     display: flex;
     align-items: center;
-    > a {
-      color: #999;
-      font-size: 14px;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+
+    > span {
+      color: var(--theme-text-secondary);
+      font-size: 16px;
+      font-weight: 600;
       line-height: 44px;
       margin-left: 20px;
       position: relative;
       transition: all 0.3s;
+      cursor: pointer;
+      padding: 0 8px;
+      border-radius: 0;
+      &:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
       &::after {
         content: '';
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        bottom: 0;
+        bottom: 8px;
         width: 0;
-        height: 2px;
-        background: #222;
+        height: 3px;
+        background: var(--theme-primary);
+        border-radius: 2px;
         transition: all 0.3s;
       }
       &.active {
-        color: #222;
+        color: var(--theme-primary);
         &::after {
-          width: 14px;
+          width: 24px;
         }
       }
     }
+
     .logo {
       flex: 1;
       display: flex;
       justify-content: flex-end;
       .logo-text {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: bold;
-        color: var(--van-primary-color);
-        margin-right: 16px;
+        color: var(--theme-primary);
+        margin-right: 20px;
         line-height: 44px;
       }
     }
   }
+
+  /* 深色模式下移除导航栏圆角 */
+  :global(html[data-theme='dark']) .my-nav {
+    border-radius: 0;
+  }
 }
 
-.article-item {
+.article-list {
+  padding: 12px 12px 0;
+}
+
+.section {
+  margin-bottom: 12px;
+}
+
+/* 骨架屏样式 */
+.skeleton-container {
+  padding: 12px 12px 0;
+}
+
+.skeleton-item {
+  background-color: var(--theme-card);
+  border-radius: var(--theme-card-radius);
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
   .head {
     display: flex;
-    img {
+    align-items: center;
+    margin-bottom: 10px;
+
+    .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      overflow: hidden;
+      margin-right: 10px;
     }
+
     .con {
       flex: 1;
-      overflow: hidden;
-      padding-left: 10px;
-      p {
-        margin: 0;
-        line-height: 1.5;
-        &.title {
-          width: 280px;
-        }
-        &.other {
-          font-size: 10px;
-          color: #999;
-        }
+
+      .title {
+        width: 70%;
+        height: 16px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+      }
+
+      .other {
+        width: 40%;
+        height: 12px;
+        border-radius: 4px;
       }
     }
   }
+
   .body {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
-    margin-top: 10px;
+    margin-bottom: 10px;
+
+    .line {
+      width: 100%;
+      height: 14px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+
+      &:last-child {
+        width: 80%;
+      }
+    }
   }
+
   .foot {
-    font-size: 12px;
-    color: #999;
-    margin-top: 10px;
+    display: flex;
+    gap: 20px;
+
+    div {
+      width: 40px;
+      height: 12px;
+      border-radius: 4px;
+    }
   }
 }
-.latest-tip {
-  padding: 12px;
-  background-color: #f5f7fa;
-  color: #646566;
-  font-size: 12px;
-  text-align: center;
-  border-radius: 4px;
-  margin: 12px;
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--theme-divider) 25%,
+    var(--theme-background) 50%,
+    var(--theme-divider) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>
