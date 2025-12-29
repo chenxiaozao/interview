@@ -42,6 +42,8 @@ request.interceptors.response.use(
         // 跳转到登录页
         router.push('/login')
         showFailToast('登录过期，请重新登录')
+        // 对于401错误，不返回Promise.reject，避免未处理的Promise拒绝
+        return Promise.resolve({ data: { rows: [], pageTotal: 0 } })
       } else {
         // 提示错误提示
         showFailToast(error.response.data.message)

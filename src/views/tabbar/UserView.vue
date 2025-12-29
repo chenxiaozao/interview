@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { showConfirmDialog } from 'vant'
 import 'vant/es/dialog/style'
 import { processAvatarUrl, handleAvatarError } from '@/utils/avatar'
+import { clearUserProfileCache } from '@/utils/user'
 
 const userProfile = ref<UserProfile>()
 
@@ -29,6 +30,8 @@ const onLogout = async () => {
     await logoutAPI()
     // 退出登录后，清空用户信息
     userProfile.value = undefined
+    // 清除用户信息缓存
+    clearUserProfileCache()
     // 跳转到登录页
     router.push('/login')
   } catch (err) {
@@ -40,12 +43,12 @@ const onLogout = async () => {
 <template>
   <div class="user-page">
     <div class="user">
-      <img :src="processAvatarUrl(userProfile?.avatar)" alt="" @error="handleAvatarError" />
+      <img :src="processAvatarUrl()" alt="" @error="handleAvatarError" />
       <h3>{{ userProfile?.name || userProfile?.username }}</h3>
     </div>
 
     <van-grid clickable :column-num="3" :border="false">
-      <van-grid-item icon="clock-o" text="历史记录" to="/" />
+      <van-grid-item icon="clock-o" text="历史记录" to="/history" />
       <van-grid-item icon="bookmark-o" text="我的收藏" to="/collect" />
       <van-grid-item icon="thumb-circle-o" text="我的点赞" to="/like" />
     </van-grid>

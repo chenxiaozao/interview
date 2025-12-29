@@ -9,6 +9,7 @@ import { showSuccessToast, showToast } from 'vant'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { processAvatarUrl, handleAvatarError } from '@/utils/avatar'
+import { addHistory } from '@/utils/history'
 // 获取页面路由
 const route = useRoute()
 // 获取路由参数 id
@@ -22,6 +23,10 @@ const getArticleDetail = async () => {
   const res = await getArticleDetailAPI(id as string)
   // 保存文章数据
   article.value = res.data
+  // 添加到浏览历史
+  if (res.data) {
+    await addHistory(res.data)
+  }
 }
 
 getArticleDetail()
@@ -60,7 +65,7 @@ const toggleCollect = async () => {
         {{ article?.createdAt }} | {{ article?.views }} 浏览量 | {{ article?.likeCount }} 点赞数
       </p>
       <p>
-        <img :src="processAvatarUrl(article?.avatar)" alt="" @error="handleAvatarError" />
+        <img :src="processAvatarUrl()" alt="" @error="handleAvatarError" />
         <span>{{ article?.creator }}</span>
       </p>
     </header>

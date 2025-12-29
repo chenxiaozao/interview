@@ -5,24 +5,15 @@
  */
 
 // 默认头像路径
-export const DEFAULT_AVATAR = '/images/avatar-default.png'
+export const DEFAULT_AVATAR = import.meta.env.BASE_URL + '1.png'
 
 /**
- * 处理头像URL，确保使用HTTPS
- * @param url 原始头像URL
- * @returns 处理后的HTTPS头像URL，如果为空则返回默认头像
+ * 处理头像URL，始终返回默认头像
+ * @returns 默认头像URL
  */
-export const processAvatarUrl = (url?: string | null): string => {
-  if (!url || url.trim() === '') {
-    return DEFAULT_AVATAR
-  }
-
-  // 将HTTP转换为HTTPS
-  if (url.startsWith('http://')) {
-    return url.replace('http://', 'https://')
-  }
-
-  return url
+export const processAvatarUrl = (): string => {
+  // 始终返回默认头像
+  return DEFAULT_AVATAR
 }
 
 /**

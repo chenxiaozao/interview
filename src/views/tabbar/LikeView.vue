@@ -15,8 +15,10 @@ const getLikeList = async () => {
     // 第一页，替换数据
     list.value = res.data.rows
   } else {
-    // 后续页，追加数据
-    list.value.push(...res.data.rows)
+    // 后续页，追加数据并去重
+    const existingIds = new Set(list.value.map(item => item.id))
+    const uniqueRows = res.data.rows.filter(item => !existingIds.has(item.id))
+    list.value.push(...uniqueRows)
   }
   // 更新加载状态
   isloading.value = false

@@ -10,7 +10,7 @@ defineProps<{
   <van-cell class="article-item" :to="`/article/${article.id}`">
     <template #title>
       <div class="head">
-        <img :src="processAvatarUrl(article.avatar)" alt="" @error="handleAvatarError" />
+        <img :src="processAvatarUrl()" alt="" @error="handleAvatarError" />
         <div class="con">
           <p class="title van-ellipsis">{{ article.stem }}</p>
 

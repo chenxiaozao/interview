@@ -6,7 +6,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 // 表单数据
-const username = ref('sujiehao')
+const username = ref('chenxiaozao')
 const password = ref('123456')
 
 // 获取 vue 路由器实例，需要写到 setup 顶级，不能嵌套到其他函数中
@@ -93,4 +93,3 @@ const onSubmit = async () => {
   }
 }
 </style>
-

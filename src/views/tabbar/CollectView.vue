@@ -9,26 +9,29 @@ const isfinished = ref(false)
 const page = ref(1)
 
 const getCollectList = async () => {
-  // 获取收藏列表API请求
-  const res = await getArticlesCollectAPI({ page: page.value })
-  if (page.value === 1) {
-    // 第一页，替换数据
-    list.value = res.data.rows
-  } else {
-    // 后续页，追加数据
-    list.value.push(...res.data.rows)
-  }
-  // 更新加载状态
-  isloading.value = false
-  // 更新页码
-  page.value++
-  // 更新是否加载完成
-  if (page.value > res.data.pageTotal) {
-    isfinished.value = true
+  try {
+    const res = await getArticlesCollectAPI({ page: page.value })
+    if (page.value === 1) {
+      // 如果是第一页，直接赋值
+      list.value = res.data.rows
+    } else {
+      // 如果不是第一页，追加数据并去重
+      const existingIds = new Set(list.value.map(item => item.id))
+      const uniqueRows = res.data.rows.filter(item => !existingIds.has(item.id))
+      list.value.push(...uniqueRows)
+    }
+    // 更新加载标记
+    isloading.value = false
+    // 增加页码
+    page.value++
+    // 判断是否数据已加载完毕
+    if (page.value > res.data.pageTotal) {
+      isfinished.value = true
+    }
+  } finally {
+    isloading.value = false
   }
 }
-
-getCollectList()
 </script>
 
 <template>

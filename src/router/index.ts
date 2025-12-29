@@ -8,6 +8,7 @@ import HomeView from '@/views/tabbar/HomeView.vue'
 import CollectView from '@/views/tabbar/CollectView.vue'
 import LikeView from '@/views/tabbar/LikeView.vue'
 import UserView from '@/views/tabbar/UserView.vue'
+import HistoryView from '@/views/tabbar/HistoryView.vue'
 
 const whiteList = ['/login', '/register']
 const router = createRouter({
@@ -66,6 +67,13 @@ const router = createRouter({
           component: UserView,
           meta: {
             title: '我的',
+          },
+        },
+        {
+          path: 'history',
+          component: HistoryView,
+          meta: {
+            title: '浏览历史',
           },
         },
       ],
